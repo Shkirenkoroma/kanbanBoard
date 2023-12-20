@@ -47,6 +47,7 @@
         }]
     },
     "settings": {
+      "import/no-unresolved": "off",
       "import/resolver": {
           "extensions": [".js", ".jsx", ".ts", ".tsx"]
         }
