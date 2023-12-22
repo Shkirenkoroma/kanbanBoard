@@ -6,16 +6,20 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
 } from '@dnd-kit/core';
 import { arrayMove, SortableContext } from '@dnd-kit/sortable';
 
-import { Column, Id } from 'types';
+import { Column, Id, Task } from 'types';
 
 import ColumnContainer from '../columnContainer';
 import PlusIcon from '../icons/plusicon';
 
 const KanbanBoard: FC = (): JSX.Element => {
   const [columns, setColumns] = useState<Column[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
   const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
 
@@ -23,6 +27,15 @@ const KanbanBoard: FC = (): JSX.Element => {
     const filteredColumns = columns.filter((col) => col.id !== id);
     setColumns(filteredColumns);
   };
+
+const updateColumn = (id: Id, title: string): void => {
+  const newColumns = columns.map((col)=> {
+    if (col.id !== id) return col;
+    return {...col, title}
+  })
+
+  setColumns(newColumns)
+}
 
   const generateId = (): number => {
     return Math.floor(Math.random() * 10001);
@@ -65,6 +78,24 @@ const KanbanBoard: FC = (): JSX.Element => {
     });
   };
 
+  const createTask = (columnId: Id) => {
+    const newTask: Task = {
+      id: generateId(),
+      columnId,
+      content: `Task ${tasks.length + 1}`
+    }
+
+    setTasks([...tasks, newTask])
+  }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 3, 
+      },
+    })
+  );
+
   return (
     <div
       className="
@@ -79,7 +110,7 @@ const KanbanBoard: FC = (): JSX.Element => {
     px-[40px]
   "
     >
-      <DndContext onDragStart={onDragStart}>
+      <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd} sensors={sensors}>
         <div className="m-auto flex gap-4">
           <div className="flex gap-4">
             <SortableContext items={columnsId}>
@@ -87,6 +118,8 @@ const KanbanBoard: FC = (): JSX.Element => {
                 <ColumnContainer
                   column={col}
                   key={col.id}
+                  createTask={createTask}
+                  updateColumn={updateColumn}
                   deleteColumn={deleteColumn}
                 />
               ))}
@@ -117,7 +150,9 @@ const KanbanBoard: FC = (): JSX.Element => {
             {activeColumn && (
               <ColumnContainer
                 column={activeColumn}
+                createTask={createTask}
                 deleteColumn={deleteColumn}
+                updateColumn={updateColumn}
               />
             )}
           </DragOverlay>,

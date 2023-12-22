@@ -1,16 +1,26 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
 import DeleteIcon from 'components/icons/deleteicon';
 import { Column, Id } from 'types';
+import PlusIcon from 'components/icons/plusicon';
 
 interface Props {
   column: Column;
   deleteColumn: (id: Id) => void;
+  updateColumn: (id: Id, title: string) => void;
+
+  createTask: (column: Id) => void
 }
 
-const ColumnContainer: FC<Props> = ({ column, deleteColumn }): JSX.Element => {
+const ColumnContainer: FC<Props> = ({
+  column,
+  createTask,
+  deleteColumn,
+  updateColumn,
+}): JSX.Element => {
+  const [editMode, setEditMode] = useState(false);
   const {
     setNodeRef,
     attributes,
@@ -24,6 +34,7 @@ const ColumnContainer: FC<Props> = ({ column, deleteColumn }): JSX.Element => {
       type: 'Column',
       column,
     },
+    disabled: editMode,
   });
 
   const style = {
@@ -52,6 +63,9 @@ const ColumnContainer: FC<Props> = ({ column, deleteColumn }): JSX.Element => {
       <div
         {...attributes}
         {...listeners}
+        onClick={() => {
+          setEditMode(true);
+        }}
         className="
       bg-columnBackrgroundColor
       text-md 
@@ -81,7 +95,22 @@ const ColumnContainer: FC<Props> = ({ column, deleteColumn }): JSX.Element => {
           >
             0
           </div>
-          {column.title}
+          {!editMode && column.title}
+          {editMode && (
+            <input
+              className="bg-black focus:border-rose-500 border-rounded outline-none px-2"
+              value={column.title}
+              onChange={(e) => updateColumn(column.id, e.target.value)}
+              autoFocus
+              onBlur={() => {
+                setEditMode(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter') return;
+                setEditMode(false);
+              }}
+            />
+          )}
         </div>
         <button
           className="
@@ -98,7 +127,19 @@ const ColumnContainer: FC<Props> = ({ column, deleteColumn }): JSX.Element => {
         </button>
       </div>
       <div className="flex flex-grow ">Content</div>
-      <div>Footer</div>
+
+      <button className="flex gap-2 items-center 
+      border-columnBackgroundColor 
+      border-2 rounded-md p-4 border-x-columnBackgroundColor 
+      hover:bg-mainBackgroundColor 
+      hover:text-rose-500 
+      active:bg-black"
+      onClick={()=> {
+        createTask(column.id)
+      }}>
+        <PlusIcon />
+        Add task
+      </button>
     </div>
   );
 };
