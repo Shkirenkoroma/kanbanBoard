@@ -65,7 +65,7 @@ const updateColumn = (id: Id, title: string): void => {
 
     if (activeColumnId === overColumnId) return;
 
-    setColumns((columns): any => {
+    setColumns((columns) => {
       const activeColumnIndex = columns.findIndex(
         (col) => col.id === activeColumnId
       );
@@ -78,7 +78,7 @@ const updateColumn = (id: Id, title: string): void => {
     });
   };
 
-  const createTask = (columnId: Id) => {
+  const createTask = (columnId: Id): void => {
     const newTask: Task = {
       id: generateId(),
       columnId,
@@ -88,6 +88,10 @@ const updateColumn = (id: Id, title: string): void => {
     setTasks([...tasks, newTask])
   }
 
+  const deleteTask = (id: Id): void=> {
+    const newTasks = tasks.filter((task)=> task.id !== id);
+    setTasks(newTasks)
+  }
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -121,6 +125,8 @@ const updateColumn = (id: Id, title: string): void => {
                   createTask={createTask}
                   updateColumn={updateColumn}
                   deleteColumn={deleteColumn}
+                  deleteTask={deleteTask}
+                  tasks={tasks.filter((task) => task.columnId === col.id)}
                 />
               ))}
             </SortableContext>
@@ -153,6 +159,8 @@ const updateColumn = (id: Id, title: string): void => {
                 createTask={createTask}
                 deleteColumn={deleteColumn}
                 updateColumn={updateColumn}
+                deleteTask={deleteTask}
+                tasks={tasks.filter((task) => task.columnId === activeColumn.id)}
               />
             )}
           </DragOverlay>,

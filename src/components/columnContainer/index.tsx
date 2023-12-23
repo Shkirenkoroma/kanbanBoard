@@ -3,15 +3,17 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
 import DeleteIcon from 'components/icons/deleteicon';
-import { Column, Id } from 'types';
+import { Column, Id, Task } from 'types';
 import PlusIcon from 'components/icons/plusicon';
+import TaskCard from 'components/taskCard';
 
 interface Props {
   column: Column;
   deleteColumn: (id: Id) => void;
   updateColumn: (id: Id, title: string) => void;
-
-  createTask: (column: Id) => void
+  createTask: (column: Id) => void;
+  deleteTask: (id: Id) => void;
+  tasks: Task[]
 }
 
 const ColumnContainer: FC<Props> = ({
@@ -19,6 +21,8 @@ const ColumnContainer: FC<Props> = ({
   createTask,
   deleteColumn,
   updateColumn,
+  deleteTask,
+  tasks
 }): JSX.Element => {
   const [editMode, setEditMode] = useState(false);
   const {
@@ -126,8 +130,12 @@ const ColumnContainer: FC<Props> = ({
           <DeleteIcon />
         </button>
       </div>
-      <div className="flex flex-grow ">Content</div>
-
+      <div className="flex flex-grow flex-col gap-4 py-5 pr-1 
+      overflow-x-hidden overflow-y-auto">{
+        tasks.map((task) => (
+          <TaskCard key={task.id} task={task} deleteTask={deleteTask}/>
+        ))
+      }</div>
       <button className="flex gap-2 items-center 
       border-columnBackgroundColor 
       border-2 rounded-md p-4 border-x-columnBackgroundColor 
