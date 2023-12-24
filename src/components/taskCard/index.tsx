@@ -1,4 +1,6 @@
+import { useSortable } from '@dnd-kit/sortable';
 import { FC, useState } from 'react';
+import { CSS } from '@dnd-kit/utilities';
 
 import { Id, Task } from 'types';
 
@@ -6,25 +8,63 @@ import DeleteIcon from './../icons/deleteicon/index';
 
 interface TaskCardProps {
   task: Task;
-  deleteTask: (id: Id) => void
+  deleteTask: (id: Id) => void;
+  updateTask: (id: Id, content: string) => void;
 }
 
-const TaskCard: FC<TaskCardProps> = ({ task, deleteTask }): JSX.Element => {
+const TaskCard: FC<TaskCardProps> = ({
+  task,
+  deleteTask,
+  updateTask,
+}): JSX.Element => {
   const [mouseIsOver, setMouseIsOver] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
+  const {
+    setNodeRef,
+    attributes,
+    listeners,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: task.id,
+    data: {
+      type: 'Task',
+      task,
+    },
+    disabled: editMode,
+  });
+
+  const style = {
+    transition,
+    transform: CSS.Transform.toString(transform),
+  };
+
   const toggleEditMode = () => {
     setEditMode((prev) => !prev);
-    setMouseIsOver(false)
+    setMouseIsOver(false);
+  };
+
+  if (isDragging) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="opacity-50 bg-mainBackgroundColor p-2.5 h-[100px] min-h-[100px]
+    items-center flex text-left rounded-xl hover:ring-2 hover:ring-inset hover:ring-rose-500 cursor-grab relative"
+      ></div>
+    );
   }
 
   if (editMode) {
-    return <>Edit mode</>
-  }
-   
-  return (
-    <div
-      className="
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="
 bg-columnBackrgroundColor 
 p-2.5 
 h-[100px] 
@@ -38,6 +78,51 @@ hover:ring-rose-500
 cursor-grab
 relative
 "
+      >
+        <textarea
+          className="h-[90%]
+  w-full
+  resize-none 
+  border-none 
+  rounded 
+  bg-transparent 
+  text-white 
+  focus:outline-none"
+          value={task.content}
+          autoFocus
+          placeholder="Task content here"
+          onBlur={toggleEditMode}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && e.shiftKey) toggleEditMode();
+          }}
+          onChange={(e) => updateTask(task.id, e.target.value)}
+        ></textarea>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={toggleEditMode}
+      className="
+bg-columnBackrgroundColor 
+p-2.5 
+h-[100px] 
+min-h-[100px] 
+items-center flex 
+text-left 
+rounded-xl 
+hover:ring-2 
+hover:ring-inset
+hover:ring-rose-500
+cursor-grab
+relative
+task
+"
       onMouseEnter={() => {
         setMouseIsOver(true);
       }}
@@ -45,7 +130,17 @@ relative
         setMouseIsOver(false);
       }}
     >
-      {task.content}
+      <p
+        className="my-auto 
+      h-[90%] 
+      w-full 
+      overflow-y-auto 
+      overflow-x-auto 
+      whitespace-pre-wrap"
+      >
+        {task.content}
+      </p>
+
       {mouseIsOver && (
         <button
           className="
@@ -56,9 +151,9 @@ relative
       p-2 rounded
       opacity-60 hover:opacity-100
       "
-      onClick={()=>{
-        deleteTask(task.id)
-      }}
+          onClick={() => {
+            deleteTask(task.id);
+          }}
         >
           <DeleteIcon />
         </button>

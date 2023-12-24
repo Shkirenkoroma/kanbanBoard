@@ -28,14 +28,14 @@ const KanbanBoard: FC = (): JSX.Element => {
     setColumns(filteredColumns);
   };
 
-const updateColumn = (id: Id, title: string): void => {
-  const newColumns = columns.map((col)=> {
-    if (col.id !== id) return col;
-    return {...col, title}
-  })
+  const updateColumn = (id: Id, title: string): void => {
+    const newColumns = columns.map((col) => {
+      if (col.id !== id) return col;
+      return { ...col, title };
+    });
 
-  setColumns(newColumns)
-}
+    setColumns(newColumns);
+  };
 
   const generateId = (): number => {
     return Math.floor(Math.random() * 10001);
@@ -82,20 +82,29 @@ const updateColumn = (id: Id, title: string): void => {
     const newTask: Task = {
       id: generateId(),
       columnId,
-      content: `Task ${tasks.length + 1}`
-    }
+      content: `Task ${tasks.length + 1}`,
+    };
 
-    setTasks([...tasks, newTask])
-  }
+    setTasks([...tasks, newTask]);
+  };
 
-  const deleteTask = (id: Id): void=> {
-    const newTasks = tasks.filter((task)=> task.id !== id);
-    setTasks(newTasks)
-  }
+  const deleteTask = (id: Id): void => {
+    const newTasks = tasks.filter((task) => task.id !== id);
+    setTasks(newTasks);
+  };
+
+  const updateTask = (id: Id, content: string): void => {
+    const newTasks = tasks.map((task) => {
+      if (task.id !== id) return task;
+      return { ...task, content };
+    });
+    setTasks(newTasks);
+  };
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 3, 
+        distance: 3,
       },
     })
   );
@@ -114,7 +123,11 @@ const updateColumn = (id: Id, title: string): void => {
     px-[40px]
   "
     >
-      <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd} sensors={sensors}>
+      <DndContext
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        sensors={sensors}
+      >
         <div className="m-auto flex gap-4">
           <div className="flex gap-4">
             <SortableContext items={columnsId}>
@@ -126,6 +139,7 @@ const updateColumn = (id: Id, title: string): void => {
                   updateColumn={updateColumn}
                   deleteColumn={deleteColumn}
                   deleteTask={deleteTask}
+                  updateTask={updateTask}
                   tasks={tasks.filter((task) => task.columnId === col.id)}
                 />
               ))}
@@ -160,7 +174,10 @@ const updateColumn = (id: Id, title: string): void => {
                 deleteColumn={deleteColumn}
                 updateColumn={updateColumn}
                 deleteTask={deleteTask}
-                tasks={tasks.filter((task) => task.columnId === activeColumn.id)}
+                updateTask={updateTask}
+                tasks={tasks.filter(
+                  (task) => task.columnId === activeColumn.id
+                )}
               />
             )}
           </DragOverlay>,
